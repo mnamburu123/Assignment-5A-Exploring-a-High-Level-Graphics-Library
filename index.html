@@ -1,0 +1,128 @@
+<!-- Manogna Namburu
+mnamburu@ucsc.edu -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Three.js Scene</title>
+    <style>
+      body {
+        margin: 0;
+      }
+      canvas {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c" width = "500" height = "500"></canvas>
+    <script type="module">
+      import * as THREE from "three";
+      import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
+      import { MTLLoader } from "three/examples/jsm/loaders/MTLLoader.js";
+      import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+
+      function main() {
+        const canvas = document.querySelector("#c");
+        const renderer = new THREE.WebGLRenderer({ antialias: true, canvas });
+        const fov = 75;
+        const aspect = 2;
+        const near = 0.1;
+        const far = 5;
+        const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+        camera.position.z = 2;
+
+        const scene = new THREE.Scene();
+
+
+        const color = 0xffffff;
+        const intensity = 5;
+        const light = new THREE.DirectionalLight(color, intensity);
+        light.position.set(1, 2, 4);
+        scene.add(light);
+
+        //The little man
+        //used this: Little Man by Don Carson [CC-BY] via Poly Pizza
+        const mtlLoader = new MTLLoader();
+        mtlLoader.load("User.mtl", (materials) => {
+          materials.preload();
+          const objLoader = new OBJLoader();
+          objLoader.setMaterials(materials);
+          objLoader.load("model.obj", (object) => {
+            object.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                child.material = new THREE.MeshPhongMaterial({ color: 0x0000ff }); // Blue
+              }
+            });
+            scene.add(object);
+            const direction = new THREE.Vector3();
+            light.position.sub(object.position).normalize();
+            object.lookAt(direction);
+          });
+        });
+
+
+        const boxWidth = 1;
+        const boxHeight = 1;
+        const boxDepth = 1;
+        const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+        //Textures
+        const loader = new THREE.TextureLoader();
+        const texture = loader.load("flower.jpeg");
+        const material = new THREE.MeshPhongMaterial({ map: texture });
+
+        
+        function makeInstance(geometry, material, x) {
+          const cube = new THREE.Mesh(geometry, material);
+          scene.add(cube);
+          cube.position.x = x;
+          return cube;
+        }
+
+        //For the small sphere
+        const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+        const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x008000 });
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(1, 0, 0);
+        scene.add(sphere);
+
+
+        // For the cylinder
+        const cylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
+        const cylinderMaterial = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+        const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
+        cylinder.position.set(0, -1, 0); 
+        scene.add(cylinder);
+
+        const cubes = [
+          makeInstance(geometry, material, -2),
+        ];
+        
+
+        function render(time) {
+          time *= 0.001;
+          cubes.forEach((cube, ndx) => {
+            const speed = 1 + ndx * 0.1;
+            const rot = time * speed;
+            cube.rotation.x = rot;
+            cube.rotation.y = rot;
+          });
+          renderer.render(scene, camera);
+          requestAnimationFrame(render);
+        }
+        requestAnimationFrame(render);
+
+        //camera
+        const controls = new OrbitControls(camera, canvas);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.5;
+        controls.enableZoom = true;
+      }
+      
+      main();
+    </script>
+  </body>
+</html>
