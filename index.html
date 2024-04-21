@@ -83,19 +83,15 @@ mnamburu@ucsc.edu -->
         }
 
         //For the small sphere
-        const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-        const sphereMaterial = new THREE.MeshPhongMaterial({ color: 0x008000 });
-        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        sphere.position.set(1, 0, 0);
-        scene.add(sphere);
-
+        const geometry2 = new THREE.SphereGeometry(0.5, 32, 32);
+        const material2 = new THREE.MeshPhongMaterial({ color: 0x008000 });
+        const sphere = new THREE.Mesh(geometry2, material2);sphere.position.set(1, 0, 0);scene.add(sphere);
 
         // For the cylinder
-        const cylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
-        const cylinderMaterial = new THREE.MeshPhongMaterial({ color: 0xffff00 });
-        const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
-        cylinder.position.set(0, -1, 0); 
-        scene.add(cylinder);
+        const geometry3 = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
+        const material3 = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+        const cylinder = new THREE.Mesh(geometry3, material3);cylinder.position.set(0, -1, 0); scene.add(cylinder);
+
 
         const cubes = [
           makeInstance(geometry, material, -2),
