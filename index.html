@@ -17,7 +17,7 @@ mnamburu@ucsc.edu -->
     </style>
   </head>
   <body>
-    <canvas id="c" width = "500" height = "500"></canvas>
+    <canvas id="c" width="900" height="500"></canvas>
     <script type="module">
       import * as THREE from "three";
       import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -32,19 +32,51 @@ mnamburu@ucsc.edu -->
         const near = 0.1;
         const far = 5;
         const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        camera.position.z = 2;
+        camera.position.z = 3;
 
         const scene = new THREE.Scene();
 
+        const loader = new THREE.CubeTextureLoader();
+        const texture = loader.load([
+          'sky.jpg',
+          'sky.jpg',
+          'sky.jpg',
+          'sky.jpg',
+          'sky.jpg',
+          'sky.jpg',
+        ]);
+        scene.background = texture;
 
-        const color = 0xffffff;
+        //directional Light
+        const color = 0xffffff; //white
         const intensity = 5;
         const light = new THREE.DirectionalLight(color, intensity);
         light.position.set(1, 2, 4);
         scene.add(light);
 
-        //The little man
-        //used this: Little Man by Don Carson [CC-BY] via Poly Pizza
+        // AmbientLight
+        const Ambientcolor = 0x808080; //grey
+        const Ambientintensity = 2;
+        const Ambientlight = new THREE.AmbientLight(Ambientcolor, Ambientintensity);
+        scene.add(Ambientlight);
+
+        // Hemisphere Light
+        const skyecolor = 0x800080;  //grey
+        const groundecolor = 0xff0000; //red
+        const Hemisphereintensity = 5;
+        const hemiLight = new THREE.HemisphereLight(skyecolor, groundecolor, Hemisphereintensity);
+        hemiLight.position.set(0, 2, 0);
+        scene.add(hemiLight);
+
+        // Point Light
+        const pointcolor = 0x0000ff; //white
+        const pointintensity = 100;
+        const pointLight = new THREE.PointLight(pointcolor, pointintensity);
+        pointLight.position.set(0, 2, 0);
+        scene.add(pointLight);
+
+        // The little man
+        // Used this: Little Man by Don Carson [CC-BY] via Poly Pizza
         const mtlLoader = new MTLLoader();
         mtlLoader.load("User.mtl", (materials) => {
           materials.preload();
@@ -53,51 +85,168 @@ mnamburu@ucsc.edu -->
           objLoader.load("model.obj", (object) => {
             object.traverse((child) => {
               if (child instanceof THREE.Mesh) {
-                child.material = new THREE.MeshPhongMaterial({ color: 0x0000ff }); // Blue
+                child.material = new THREE.MeshPhongMaterial({ color: 0xadd8e6 }); 
               }
             });
+            object.position.set(2.5, 0, 0);
             scene.add(object);
-            const direction = new THREE.Vector3();
-            light.position.sub(object.position).normalize();
-            object.lookAt(direction);
+            object.rotation.y = 90; 
+            
           });
         });
-
 
         const boxWidth = 1;
         const boxHeight = 1;
         const boxDepth = 1;
         const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
 
-        //Textures
-        const loader = new THREE.TextureLoader();
-        const texture = loader.load("flower.jpeg");
-        const material = new THREE.MeshPhongMaterial({ map: texture });
+        // Textures
+        const textureLoader = new THREE.TextureLoader();
+        const boxTexture = textureLoader.load("flower.jpeg");
+        const material = new THREE.MeshPhongMaterial({ map: boxTexture });
 
-        
         function makeInstance(geometry, material, x) {
           const cube = new THREE.Mesh(geometry, material);
-          scene.add(cube);
+          //scene.add(cube);
           cube.position.x = x;
           return cube;
         }
 
-        //For the small sphere
-        const geometry2 = new THREE.SphereGeometry(0.5, 32, 32);
-        const material2 = new THREE.MeshPhongMaterial({ color: 0x008000 });
-        const sphere = new THREE.Mesh(geometry2, material2);sphere.position.set(1, 0, 0);scene.add(sphere);
 
-        // For the cylinder
-        const geometry3 = new THREE.CylinderGeometry(0.5, 0.5, 1, 32);
-        const material3 = new THREE.MeshPhongMaterial({ color: 0xffff00 });
-        const cylinder = new THREE.Mesh(geometry3, material3);cylinder.position.set(0, -1, 0); scene.add(cylinder);
+        const cubes = [makeInstance(geometry, material, -2)];
+
+        const textureLoader2 = new THREE.TextureLoader();
+        const boxTexture2 = textureLoader2.load("cloud.webp");
+        const GroundMaterial = new THREE.MeshPhongMaterial({ map: boxTexture2 });
+
+        // ground
+        const Ground = new THREE.BoxGeometry(5, 0.5, 5);
+        const largeBase = new THREE.Mesh(Ground, GroundMaterial);
+        largeBase.position.set(0, -1, 0); 
+        scene.add(largeBase);
+
+        // Castle base
+        const CastleBase = new THREE.BoxGeometry(2, 0.5, 2);
+        const BaseMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+        const Base = new THREE.Mesh(CastleBase, BaseMaterial);
+        Base.position.set(0, -0.5, 0);
+        scene.add(Base);
+
+        // Towers
+        const Tower = new THREE.CylinderGeometry(0.25, 0.25, 1, 32);
+
+        const tower1Material = new THREE.MeshPhongMaterial({ color: 0xA9A9A9 }); 
+        const tower2Material = new THREE.MeshPhongMaterial({ color: 0xA9A9A9 }); 
+        const tower3Material = new THREE.MeshPhongMaterial({ color: 0xA9A9A9 }); 
+        const tower4Material = new THREE.MeshPhongMaterial({ color: 0xA9A9A9 }); 
+
+        const tower1 = new THREE.Mesh(Tower, tower1Material);
+        tower1.position.set(-0.75, 0, -0.75); 
+        scene.add(tower1);
+
+        const tower2 = new THREE.Mesh(Tower, tower2Material);
+        tower2.position.set(0.75, 0, -0.75);
+        scene.add(tower2);
+
+        const tower3 = new THREE.Mesh(Tower, tower3Material);
+        tower3.position.set(-0.75, 0, 0.75);
+        scene.add(tower3);
+
+        const tower4 = new THREE.Mesh(Tower, tower4Material);
+        tower4.position.set(0.75, 0, 0.75); 
+        scene.add(tower4);
 
 
-        const cubes = [
-          makeInstance(geometry, material, -2),
-        ];
+        // Walls
+        const Walls = new THREE.BoxGeometry(1.5, 1, 0.25);
+
+        const wall1Material = new THREE.MeshPhongMaterial({ color: 0x654321 }); 
+        const wall2Material = new THREE.MeshPhongMaterial({ color: 0x654321 }); 
+        const wall3Material = new THREE.MeshPhongMaterial({ color: 0x654321 }); 
+        const wall4Material = new THREE.MeshPhongMaterial({ color: 0x654321 }); 
+
+        const wall1 = new THREE.Mesh(Walls, wall1Material);
+        wall1.position.set(0, -0.25, -0.875); 
+        scene.add(wall1);
+
+        const wall2 = new THREE.Mesh(Walls, wall2Material);
+        wall2.position.set(0, -0.25, 0.875); 
+        scene.add(wall2);
+
+        const wall3 = new THREE.Mesh(Walls, wall3Material);
+        wall3.position.set(-0.875, -0.25, 0); 
+        wall3.rotation.y = Math.PI / 2;
+        scene.add(wall3);
+
+        const wall4 = new THREE.Mesh(Walls, wall4Material);
+        wall4.position.set(0.875, -0.25, 0);
+        wall4.rotation.y = Math.PI / 2;
+        scene.add(wall4);
+
+        // Cones
+        const Cones = new THREE.ConeGeometry(0.25, 0.5, 32);
+
+        const Cone1Material = new THREE.MeshPhongMaterial({ color: 0x800000 }); 
+        const Cone2Material = new THREE.MeshPhongMaterial({ color: 0x800000 }); 
+        const Cones3Material = new THREE.MeshPhongMaterial({ color: 0x800000 }); 
+        const Cones4Material = new THREE.MeshPhongMaterial({ color: 0x800000 }); 
+
+        const coof1 = new THREE.Mesh(Cones, Cone1Material);
+        coof1.position.set(-0.75, 0.75, -0.75);
+        scene.add(coof1);
+
+        const coof2 = new THREE.Mesh(Cones, Cone2Material);
+        coof2.position.set(0.75, 0.75, -0.75);
+        scene.add(coof2);
+
+        const coof3 = new THREE.Mesh(Cones, Cones3Material);
+        coof3.position.set(-0.75, 0.75, 0.75); 
+        scene.add(coof3);
+
+        const coof4 = new THREE.Mesh(Cones, Cones4Material);
+        coof4.position.set(0.75, 0.75, 0.75);
+        scene.add(coof4);
+
+        //flags
+        const Flags = new THREE.SphereGeometry(0.125, 32, 32);
+        const FlagMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+
+        const sphere1 = new THREE.Mesh(Flags, FlagMaterial);
+        sphere1.position.set(-0.75, 1.5, -0.75);
+        scene.add(sphere1);
+
+        const sphere2 = new THREE.Mesh(Flags, FlagMaterial);
+        sphere2.position.set(0.75, 1.5, -0.75); 
+        scene.add(sphere2);
+
+        const sphere3 = new THREE.Mesh(Flags, FlagMaterial);
+        sphere3.position.set(-0.75, 1.5, 0.75);
+        scene.add(sphere3);
+
+        const sphere4 = new THREE.Mesh(Flags, FlagMaterial);
+        sphere4.position.set(0.75, 1.5, 0.75); 
+        scene.add(sphere4);
+
+        //poles
+        const Poles = new THREE.CylinderGeometry(0.05, 0.05, 0.75, 3);
+        const PoleMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 }); 
+
+        const Pole1 = new THREE.Mesh(Poles, PoleMaterial);
+        Pole1.position.set(-0.75, 1.125, -0.75); 
+        scene.add(Pole1);
+
+        const Pole2 = new THREE.Mesh(Poles, PoleMaterial);
+        Pole2.position.set(0.75, 1.125, -0.75); 
+        scene.add(Pole2);
+
+        const Pole3 = new THREE.Mesh(Poles, PoleMaterial);
+        Pole3.position.set(-0.75, 1.125, 0.75); 
+        scene.add(Pole3);
+
+        const Pole4 = new THREE.Mesh(Poles, PoleMaterial);
+        Pole4.position.set(0.75, 1.125, 0.75); 
+        scene.add(Pole4);
         
-
         function render(time) {
           time *= 0.001;
           cubes.forEach((cube, ndx) => {
@@ -109,16 +258,19 @@ mnamburu@ucsc.edu -->
           renderer.render(scene, camera);
           requestAnimationFrame(render);
         }
+        
         requestAnimationFrame(render);
 
-        //camera
+        // Camera controls
         const controls = new OrbitControls(camera, canvas);
         controls.enableDamping = true;
         controls.dampingFactor = 0.5;
         controls.enableZoom = true;
       }
-      
+
       main();
     </script>
   </body>
 </html>
+
+
