@@ -18,6 +18,12 @@ mnamburu@ucsc.edu -->
   </head>
   <body>
     <canvas id="c" width="900" height="500"></canvas>
+    <div id="about">
+      <strong>About This Work:</strong><br>
+      <p>This 3D scene is a castle in the sky on top of the clouds. </p>
+      <p>The little man next to the castle is animated to welcome the visitors. </p>
+      <p>The wow factors I included are the animated little man, the 3D welcome bubble and the animated rain. </p>
+    </div>
     <script type="module">
       import * as THREE from "three";
       import { OBJLoader } from "three/examples/jsm/loaders/OBJLoader.js";
@@ -32,7 +38,7 @@ mnamburu@ucsc.edu -->
         const near = 0.1;
         const far = 5;
         const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
-        camera.position.z = 3;
+        camera.position.z = 4;
 
         const scene = new THREE.Scene();
 
@@ -76,7 +82,7 @@ mnamburu@ucsc.edu -->
         scene.add(pointLight);
 
         // The little man
-        // Used this: Little Man by Don Carson [CC-BY] via Poly Pizza
+        let littleMan;
         const mtlLoader = new MTLLoader();
         mtlLoader.load("User.mtl", (materials) => {
           materials.preload();
@@ -90,8 +96,17 @@ mnamburu@ucsc.edu -->
             });
             object.position.set(2.5, 0, 0);
             scene.add(object);
-            object.rotation.y = 90; 
-            
+            object.rotation.y = 90;
+            littleMan = object; 
+
+            // text
+            const spriteMaterial = new THREE.SpriteMaterial({
+              map: TextBubble("Welcome to my castle!"),
+            });
+            const text = new THREE.Sprite(spriteMaterial);
+            text.position.set(3, 1, 0);
+            text.scale.set(3, 1, 1); 
+            scene.add(text);
           });
         });
 
@@ -111,7 +126,6 @@ mnamburu@ucsc.edu -->
           cube.position.x = x;
           return cube;
         }
-
 
         const cubes = [makeInstance(geometry, material, -2)];
 
@@ -155,7 +169,6 @@ mnamburu@ucsc.edu -->
         const tower4 = new THREE.Mesh(Tower, tower4Material);
         tower4.position.set(0.75, 0, 0.75); 
         scene.add(tower4);
-
 
         // Walls
         const Walls = new THREE.BoxGeometry(1.5, 1, 0.25);
@@ -246,15 +259,64 @@ mnamburu@ucsc.edu -->
         const Pole4 = new THREE.Mesh(Poles, PoleMaterial);
         Pole4.position.set(0.75, 1.125, 0.75); 
         scene.add(Pole4);
+
         
+       
+        // Rain
+        const raindrops = [];
+
+        for (let i = 0; i < 200; i++) {
+          const rainGeometry = new THREE.SphereGeometry(0.02, 8, 8);
+          const rainMaterial = new THREE.MeshPhongMaterial({ color: 0xaaaaaa });
+          const raindrop = new THREE.Mesh(rainGeometry, rainMaterial);
+          raindrop.position.set(
+            Math.random() * 5 - 2.5, 
+            Math.random() * 5 - 2.5
+          );
+          scene.add(raindrop);
+          raindrops.push(raindrop);
+        }
+
+        function animateRaindrops() {
+          raindrops.forEach((raindrop) => {
+            raindrop.position.y -= 0.1;
+            if (raindrop.position.y < -1) {
+              raindrop.position.y = Math.random() * 5;
+              raindrop.position.z = Math.random() * 5 - 2.5;
+            }
+          });
+        }
+
+        function TextBubble(text) {
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          context.font = '48px Arial';
+          const textWidth = context.measureText(text).width;
+          canvas.width = textWidth;
+          canvas.height = 64;
+          context.font = '38px Arial';
+          context.fillStyle = 'purple';
+          context.fillText(text, 0, 40);
+          const texture = new THREE.CanvasTexture(canvas);
+          return texture;
+        }
+
         function render(time) {
           time *= 0.001;
+
+          if (littleMan) {
+            littleMan.position.y = Math.abs(Math.sin(time * 2)) * 0.5;
+          }
+
+          animateRaindrops();
+
           cubes.forEach((cube, ndx) => {
             const speed = 1 + ndx * 0.1;
             const rot = time * speed;
             cube.rotation.x = rot;
             cube.rotation.y = rot;
           });
+
           renderer.render(scene, camera);
           requestAnimationFrame(render);
         }
@@ -272,5 +334,3 @@ mnamburu@ucsc.edu -->
     </script>
   </body>
 </html>
-
-
